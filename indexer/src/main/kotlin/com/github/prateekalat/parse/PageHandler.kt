@@ -7,6 +7,10 @@ class PageHandler : DefaultHandler() {
 
     val pages: ArrayList<Page> = ArrayList()
 
+    private val sectionParser = SectionParser()
+
+    private var pageNumber = 0
+
     private var title = ""
 
     private var text = ""
@@ -21,7 +25,10 @@ class PageHandler : DefaultHandler() {
 
     override fun endElement(uri: String?, localName: String?, qName: String?) {
         when (qName) {
-            "page" -> pages.add(Page(title, text))
+            "page" -> {
+                pages.add(Page(pageNumber, title, sectionParser.parse(text)))
+                pageNumber++
+            }
             "title" -> title = content.toString()
             "text" -> text = content.toString()
         }

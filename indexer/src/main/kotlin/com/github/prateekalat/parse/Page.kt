@@ -1,6 +1,7 @@
 package com.github.prateekalat.parse
 
 data class Page(
+        val id: Int,
         val title: String,
-        val text: String
+        val sections: List<String>
 )

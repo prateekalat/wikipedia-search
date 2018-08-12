@@ -13,7 +13,7 @@ class Application {
             val parser = parserFactory.newSAXParser()
             parser.parse(File("Z:/SearchEngine/wiki-search-small.xml"), handler)
 
-            handler.pages.forEach { System.out.println(it) }
+            handler.pages.forEach { System.out.println("%s, sections: %d".format(it.title, it.sections.count())) }
         }
     }
 }
