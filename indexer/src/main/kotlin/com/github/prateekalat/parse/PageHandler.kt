@@ -3,40 +3,56 @@ package com.github.prateekalat.parse
 import org.xml.sax.Attributes
 import org.xml.sax.helpers.DefaultHandler
 
-class PageHandler : DefaultHandler() {
 
-    val pages: ArrayList<Page> = ArrayList()
+class PageHandler(private val callback: PageCallback) : DefaultHandler() {
 
-    private val sectionParser = SectionParser()
+    private var insideRevision = false
+    private var currentPage: Page? = null
+    private var currentTag: String? = null
 
-    private var pageNumber = 0
+    private var currentWikitext: StringBuilder? = null
+    private var currentTitle: StringBuilder? = null
+    private var currentID: StringBuilder? = null
 
-    private var title = ""
-
-    private var text = ""
-
-    private var content = StringBuilder()
-
-    override fun startElement(uri: String?, localName: String?, qName: String?, attributes: Attributes?) {
-        when (qName) {
-            "page" -> content = StringBuilder()
+    override fun startElement(uri: String?, name: String?, qName: String?, attr: Attributes?) {
+        currentTag = qName
+        if (qName == "page") {
+            currentPage = Page()
+            currentWikitext = StringBuilder("")
+            currentTitle = StringBuilder("")
+            currentID = StringBuilder("")
         }
+
+        if (qName == "revision") {
+            insideRevision = true
+        }
+
     }
 
-    override fun endElement(uri: String?, localName: String?, qName: String?) {
-        when (qName) {
-            "page" -> {
-                pages.add(Page(pageNumber, title, sectionParser.parse(text)))
-                pageNumber++
+    override fun endElement(uri: String?, name: String?, qName: String?) {
+        if (qName == "revision") {
+            insideRevision = false
+        }
+        if (qName == "page") {
+            currentPage?.let {
+                it.title = currentTitle.toString().trim()
+                it.id = currentID.toString().trim()
+                it.wikiText = currentWikitext.toString().trim()
+                callback.process(it)
             }
-            "title" -> title = content.toString()
-            "text" -> text = content.toString()
+        }
+        if (qName == "mediawiki") {
+            // TODO hasMoreElements() should now return false
         }
     }
 
     override fun characters(ch: CharArray?, start: Int, length: Int) {
-        if (ch != null) {
-            content.append(String(ch.copyOfRange(start, start + length)).trim())
-        }
+        if (currentTag == "title") {
+            currentTitle = currentTitle?.append(ch, start, length)
+        } else if (currentTag == "id" && !insideRevision) {
+            currentID?.append(ch, start, length)
+        } else if (currentTag == "text") {
+            currentWikitext = currentWikitext?.append(ch, start, length)
+        }// Avoids looking at the revision ID, only the first ID should be taken.
     }
 }
