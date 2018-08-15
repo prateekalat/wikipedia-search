@@ -229,7 +229,6 @@ public class ExternalSort {
                     BinaryFileBuffer bfb = pq.poll();
                     lastLine = bfb.pop();
                     fbw.write(lastLine);
-                    fbw.newLine();
                     ++rowcounter;
                     if (bfb.empty()) {
                         bfb.fbr.close();
@@ -237,14 +236,23 @@ public class ExternalSort {
                         pq.add(bfb); // add it back
                     }
                 }
+
+                boolean duplicate = false;
                 while (pq.size() > 0) {
                     BinaryFileBuffer bfb = pq.poll();
                     String r = bfb.pop();
                     // Skip duplicate lines
                     if (cmp.compare(r, lastLine) != 0) {
-                        fbw.write(r);
+                        if (duplicate) {
+                            duplicate = false;
+                        }
+
                         fbw.newLine();
+                        fbw.write(r);
                         lastLine = r;
+                    } else {
+                        duplicate = true;
+                        fbw.write(String.format("|%s", r.split(":")[1]));
                     }
                     ++rowcounter;
                     if (bfb.empty()) {
@@ -498,15 +506,25 @@ public class ExternalSort {
                 if (i.hasNext()) {
                     lastLine = i.next();
                     fbw.write(lastLine);
-                    fbw.newLine();
+//                    fbw.newLine();
                 }
+
+                boolean duplicate = false;
                 while (i.hasNext()) {
                     String r = i.next();
                     // Skip duplicate lines
                     if (cmp.compare(r, lastLine) != 0) {
-                        fbw.write(r);
+                        if (duplicate) {
+//                            fbw.newLine();
+                            duplicate = false;
+                        }
+
                         fbw.newLine();
+                        fbw.write(r);
                         lastLine = r;
+                    } else {
+                        duplicate = true;
+                        fbw.write(String.format("|%s", r.split(":")[1]));
                     }
                 }
             }

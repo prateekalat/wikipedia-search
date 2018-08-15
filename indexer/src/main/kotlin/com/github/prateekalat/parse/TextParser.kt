@@ -5,7 +5,7 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 
-class WikiTextParser(wikiText: String) {
+class TextParser(wikiText: String) {
     val text: String
     var matcher: Matcher = stubPattern!!.matcher(wikiText)
     var isRedirect = false
