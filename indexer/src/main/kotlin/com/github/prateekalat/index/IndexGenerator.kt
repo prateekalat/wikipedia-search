@@ -8,7 +8,8 @@ class IndexGenerator {
             textTokens: TreeMap<String, Int>,
             categoryTokens: TreeMap<String, Int>,
             titleTokens: TreeMap<String, Int>,
-            infoBoxTokens: TreeMap<String, Int>
+            infoBoxTokens: TreeMap<String, Int>,
+            linkTokens: TreeMap<String, Int>
     ) : String {
         val builder = StringBuilder()
 
@@ -26,6 +27,10 @@ class IndexGenerator {
 
         for ((word, frequency) in infoBoxTokens) {
             builder.append("%s-i:d%d-%d\n".format(word, pageId, frequency))
+        }
+
+        for ((word, frequency) in linkTokens) {
+            builder.append("%s-l:d%d-%d\n".format(word, pageId, frequency))
         }
 
         return builder.toString()

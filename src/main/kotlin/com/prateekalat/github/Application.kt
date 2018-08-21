@@ -39,23 +39,27 @@ class Application {
                     val cleanedCategories = cleaner.clean(textParser.categories)
                     val cleanedTitle = cleaner.clean(page.title)
                     val cleanedInfoBox = cleaner.clean(textParser.infoBox.dumpRaw() ?: "")
+                    val cleanedLinks = cleaner.clean(textParser.links)
 
                     val textTokens = tokenizer.tokenize(cleanedText)
                     val categoryTokens = tokenizer.tokenize(cleanedCategories)
                     val titleTokens = tokenizer.tokenize(cleanedTitle)
                     val infoBoxTokens = tokenizer.tokenize(cleanedInfoBox)
+                    val linkTokens = tokenizer.tokenize(cleanedLinks)
 
                     val stemmedTextTokens = stemmer.stemTreeMap(textTokens)
                     val stemmedCategoryTokens = stemmer.stemTreeMap(categoryTokens)
                     val stemmedTitleTokens = stemmer.stemTreeMap(titleTokens)
                     val stemmedInfoBoxTokens = stemmer.stemTreeMap(infoBoxTokens)
+                    val stemmedLinkTokens = stemmer.stemTreeMap(linkTokens)
 
                     val index = indexGenerator.generateIndex(
                             pageId,
                             stemmedTextTokens,
                             stemmedCategoryTokens,
                             stemmedTitleTokens,
-                            stemmedInfoBoxTokens
+                            stemmedInfoBoxTokens,
+                            stemmedLinkTokens
                     )
 
                     writer.append(index)
