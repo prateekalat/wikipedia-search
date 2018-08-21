@@ -17,6 +17,8 @@ import javax.xml.parsers.SAXParserFactory
 fun main(args: Array<String>) {
     val startTime = System.currentTimeMillis()
 
+    args.forEach { System.out.println(it) }
+
     var pageId = 1
 
     val unsortedIndexFile = File("Z:/SearchEngine/out.txt").apply { if (exists()) delete() }
