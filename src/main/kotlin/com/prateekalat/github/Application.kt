@@ -33,13 +33,30 @@ class Application {
             val handler = PageHandler(object : PageCallback {
                 override fun process(page: Page) {
 
-                    val wikiTextParser = TextParser(page.wikiText)
-                    val cleanedText = cleaner.clean(wikiTextParser.textBody)
+                    val textParser = TextParser(page.wikiText)
 
-                    val tokens = tokenizer.tokenize(cleanedText)
-                    val stemmedTokens = stemmer.stemTreeMap(tokens)
+                    val cleanedText = cleaner.clean(textParser.textBody)
+                    val cleanedCategories = cleaner.clean(textParser.categories)
+                    val cleanedTitle = cleaner.clean(page.title)
+                    val cleanedInfoBox = cleaner.clean(textParser.infoBox.dumpRaw() ?: "")
 
-                    val index = indexGenerator.generateIndex(pageId, stemmedTokens)
+                    val textTokens = tokenizer.tokenize(cleanedText)
+                    val categoryTokens = tokenizer.tokenize(cleanedCategories)
+                    val titleTokens = tokenizer.tokenize(cleanedTitle)
+                    val infoBoxTokens = tokenizer.tokenize(cleanedInfoBox)
+
+                    val stemmedTextTokens = stemmer.stemTreeMap(textTokens)
+                    val stemmedCategoryTokens = stemmer.stemTreeMap(categoryTokens)
+                    val stemmedTitleTokens = stemmer.stemTreeMap(titleTokens)
+                    val stemmedInfoBoxTokens = stemmer.stemTreeMap(infoBoxTokens)
+
+                    val index = indexGenerator.generateIndex(
+                            pageId,
+                            stemmedTextTokens,
+                            stemmedCategoryTokens,
+                            stemmedTitleTokens,
+                            stemmedInfoBoxTokens
+                    )
 
                     writer.append(index)
 

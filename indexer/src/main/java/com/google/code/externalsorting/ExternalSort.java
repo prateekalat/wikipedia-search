@@ -149,7 +149,8 @@ public class ExternalSort {
                         lastLine = r;
                     } else {
                         duplicate = true;
-                        fbw.write(String.format("|%s", r.split(":")[1]));
+                        String[] list = r.split(":");
+                        if (list.length >= 2) fbw.write(String.format("|%s", list[1]));
                     }
                     ++rowcounter;
                     if (bfb.empty()) {
@@ -327,13 +328,17 @@ public class ExternalSort {
                         lastLine = r;
                     } else {
                         duplicate = true;
-                        fbw.write(String.format("|%s", r.split(":")[1]));
+//                        System.out.println(r);
+                        String[] list = r.split(":");
+
+                        if (list.length >= 2) fbw.write(String.format("|%s", list[1]));
                     }
                 }
             }
         }
         return newtmpfile;
     }
+
 
     /**
      * This will simply load the file by blocks of lines, then sort them
