@@ -74,9 +74,9 @@ class Application {
             }
 
             val listOfFiles = sortInBatch(unsortedIndexFile, comparator,
-                    File("Z:/SearchEngine/"), true, 0)
+                    File("Z:/SearchEngine/"))
 
-            mergeSortedFiles(listOfFiles, File("Z:/SearchEngine/index.txt"), comparator, true)
+            mergeSortedFiles(listOfFiles, File("Z:/SearchEngine/index.txt"), comparator)
 
             val currentTime = System.currentTimeMillis()
             System.out.println("%d seconds".format((currentTime - startTime) / 1000))
