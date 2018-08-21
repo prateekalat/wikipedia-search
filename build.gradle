@@ -1,27 +1,41 @@
-plugins {
-    id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.2.60'
+buildscript {
+    ext.kotlin_version = '1.2.61'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
 }
 
-group 'wikipedia'
-version '1.0-SNAPSHOT'
+apply plugin: 'kotlin'
+apply plugin: 'application'
 
-sourceCompatibility = 1.8
+mainClassName = 'com.prateekalat.github.ApplicationKt'
+
+defaultTasks 'run'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testCompile 'junit:junit:4.11'
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 
-    implementation project(':indexer')
+    compile project('indexer')
 }
 
-compileKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+jar {
+    manifest {
+        attributes(
+                'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+                'Main-Class': 'com.prateekalat.github.ApplicationKt'
+        )
+    }
 }
-compileTestKotlin {
-    kotlinOptions.jvmTarget = "1.8"
+
+task wrapper(type: Wrapper) {
+    gradleVersion = "4.1"
 }
