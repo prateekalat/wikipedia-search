@@ -2,7 +2,7 @@ package com.github.prateekalat.tokenize
 
 class StopWordsUtil {
     companion object {
-        val stopWords = setOf("", "a", "as", "able", "about", "above", "according", "accordingly", "across", "actually", "after",
+        val stopWords = sortedSetOf("", "a", "as", "able", "about", "above", "according", "accordingly", "across", "actually", "after",
             "afterwards", "again", "against", "aint", "all", "allow", "allows", "almost", "alone", "along", "already",
             "also", "although", "always", "am", "among", "amongst", "an", "and", "another", "any", "anybody", "anyhow",
             "anyone", "anything", "anyway", "anyways", "anywhere", "apart", "appear", "appreciate", "appropriate", "are",

@@ -17,6 +17,8 @@ class Stemmer {
 
             val stemmedWord = internalStemmer.current
 
+            if (StopWordsUtil.stopWords.contains(stemmedWord)) continue
+
             val currentMapValue = outputMap[stemmedWord]
             if (currentMapValue == null) {
                 outputMap[stemmedWord] = value

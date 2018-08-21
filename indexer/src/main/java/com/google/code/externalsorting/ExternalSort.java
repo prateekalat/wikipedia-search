@@ -33,26 +33,6 @@ import java.util.zip.GZIPOutputStream;
  */
 public class ExternalSort {
 
-
-    private static void displayUsage() {
-        System.out
-                .println("java com.google.externalsorting.com.google.code.externalsorting.ExternalSort inputfile outputfile");
-        System.out.println("Flags are:");
-        System.out.println("-v or --verbose: verbose output");
-        System.out.println("-d or --distinct: prune duplicate lines");
-        System.out
-                .println("-t or --maxtmpfiles (followed by an integer): specify an upper bound on the number of temporary files");
-        System.out
-                .println("-c or --charset (followed by a charset code): specify the character set to use (for sorting)");
-        System.out
-                .println("-z or --gzip: use compression for the temporary files");
-        System.out
-                .println("-H or --header (followed by an integer): ignore the first few lines");
-        System.out
-                .println("-s or --store (following by a path): where to store the temporary files");
-        System.out.println("-h or --help: display this message");
-    }
-
     /**
      * This method calls the garbage collector and then returns the free
      * memory. This avoids problems with applications where the GC hasn't
@@ -95,89 +75,6 @@ public class ExternalSort {
             blocksize = maxMemory / 2;
         }
         return blocksize;
-    }
-
-    /**
-     * @param args command line argument
-     * @throws IOException generic IO exception
-     */
-    public static void main(final String[] args) throws IOException {
-        boolean verbose = false;
-        boolean distinct = false;
-        int maxtmpfiles = DEFAULTMAXTEMPFILES;
-        Charset cs = Charset.defaultCharset();
-        String inputfile = null, outputfile = null;
-        File tempFileStore = null;
-        boolean usegzip = false;
-        boolean parallel = true;
-        int headersize = 0;
-        for (int param = 0; param < args.length; ++param) {
-            if (args[param].equals("-v")
-                    || args[param].equals("--verbose")) {
-                verbose = true;
-            } else if ((args[param].equals("-h") || args[param]
-                    .equals("--help"))) {
-                displayUsage();
-                return;
-            } else if ((args[param].equals("-d") || args[param]
-                    .equals("--distinct"))) {
-                distinct = true;
-            } else if ((args[param].equals("-t") || args[param]
-                    .equals("--maxtmpfiles"))
-                    && args.length > param + 1) {
-                param++;
-                maxtmpfiles = Integer.parseInt(args[param]);
-                if (maxtmpfiles < 0) {
-                    System.err
-                            .println("maxtmpfiles should be positive");
-                }
-            } else if ((args[param].equals("-c") || args[param]
-                    .equals("--charset"))
-                    && args.length > param + 1) {
-                param++;
-                cs = Charset.forName(args[param]);
-            } else if ((args[param].equals("-z") || args[param]
-                    .equals("--gzip"))) {
-                usegzip = true;
-            } else if ((args[param].equals("-H") || args[param]
-                    .equals("--header")) && args.length > param + 1) {
-                param++;
-                headersize = Integer.parseInt(args[param]);
-                if (headersize < 0) {
-                    System.err
-                            .println("headersize should be positive");
-                }
-            } else if ((args[param].equals("-s") || args[param]
-                    .equals("--store")) && args.length > param + 1) {
-                param++;
-                tempFileStore = new File(args[param]);
-            } else {
-                if (inputfile == null) {
-                    inputfile = args[param];
-                } else if (outputfile == null) {
-                    outputfile = args[param];
-                } else {
-                    System.out.println("Unparsed: "
-                            + args[param]);
-                }
-            }
-        }
-        if (outputfile == null) {
-            System.out
-                    .println("please provide input and output file names");
-            displayUsage();
-            return;
-        }
-        Comparator<String> comparator = defaultcomparator;
-        List<File> l = sortInBatch(new File(inputfile), comparator,
-                maxtmpfiles, cs, tempFileStore, distinct, headersize,
-                usegzip, parallel);
-        if (verbose) {
-            System.out
-                    .println("created " + l.size() + " tmp files");
-        }
-        mergeSortedFiles(l, new File(outputfile), comparator, cs,
-                distinct, false, usegzip);
     }
 
     /**
@@ -277,36 +174,6 @@ public class ExternalSort {
      *
      * @param files      The {@link List} of sorted {@link File}s to be merged.
      * @param outputfile The output {@link File} to merge the results to.
-     * @return The number of lines sorted.
-     * @throws IOException generic IO exception
-     */
-    public static long mergeSortedFiles(List<File> files, File outputfile)
-            throws IOException {
-        return mergeSortedFiles(files, outputfile, defaultcomparator,
-                Charset.defaultCharset());
-    }
-
-    /**
-     * This merges a bunch of temporary flat files
-     *
-     * @param files      The {@link List} of sorted {@link File}s to be merged.
-     * @param outputfile The output {@link File} to merge the results to.
-     * @param cmp        The {@link Comparator} to use to compare
-     *                   {@link String}s.
-     * @return The number of lines sorted.
-     * @throws IOException generic IO exception
-     */
-    public static long mergeSortedFiles(List<File> files, File outputfile,
-                                        final Comparator<String> cmp) throws IOException {
-        return mergeSortedFiles(files, outputfile, cmp,
-                Charset.defaultCharset());
-    }
-
-    /**
-     * This merges a bunch of temporary flat files
-     *
-     * @param files      The {@link List} of sorted {@link File}s to be merged.
-     * @param outputfile The output {@link File} to merge the results to.
      * @param cmp        The {@link Comparator} to use to compare
      *                   {@link String}s.
      * @param distinct   Pass <code>true</code> if duplicate lines should be
@@ -319,23 +186,6 @@ public class ExternalSort {
             throws IOException {
         return mergeSortedFiles(files, outputfile, cmp,
                 Charset.defaultCharset(), distinct);
-    }
-
-    /**
-     * This merges a bunch of temporary flat files
-     *
-     * @param files      The {@link List} of sorted {@link File}s to be merged.
-     * @param outputfile The output {@link File} to merge the results to.
-     * @param cmp        The {@link Comparator} to use to compare
-     *                   {@link String}s.
-     * @param cs         The {@link Charset} to be used for the byte to
-     *                   character conversion.
-     * @return The number of lines sorted.
-     * @throws IOException generic IO exception
-     */
-    public static long mergeSortedFiles(List<File> files, File outputfile,
-                                        final Comparator<String> cmp, Charset cs) throws IOException {
-        return mergeSortedFiles(files, outputfile, cmp, cs, false);
     }
 
     /**
@@ -407,53 +257,6 @@ public class ExternalSort {
             f.delete();
         }
         return rowcounter;
-    }
-
-    /**
-     * This sorts a file (input) to an output file (output) using default
-     * parameters
-     *
-     * @param input  source file
-     * @param output output file
-     * @throws IOException generic IO exception
-     */
-    public static void sort(final File input, final File output)
-            throws IOException {
-        ExternalSort.mergeSortedFiles(ExternalSort.sortInBatch(input),
-                output);
-    }
-
-    /**
-     * This sorts a file (input) to an output file (output) using customized comparator
-     *
-     * @param input  source file
-     * @param output output file
-     * @param cmp    The {@link Comparator} to use to compare
-     *               {@link String}s.
-     * @throws IOException generic IO exception
-     */
-    public static void sort(final File input, final File output, final Comparator<String> cmp)
-            throws IOException {
-        ExternalSort.mergeSortedFiles(ExternalSort.sortInBatch(input),
-                output, cmp);
-    }
-
-    /**
-     * Sort a list and save it to a temporary file
-     *
-     * @param tmplist      data to be sorted
-     * @param cmp          string comparator
-     * @param cs           charset to use for output (can use
-     *                     Charset.defaultCharset())
-     * @param tmpdirectory location of the temporary files (set to null for
-     *                     default location)
-     * @return the file containing the sorted data
-     * @throws IOException generic IO exception
-     */
-    public static File sortAndSave(List<String> tmplist,
-                                   Comparator<String> cmp, Charset cs, File tmpdirectory)
-            throws IOException {
-        return sortAndSave(tmplist, cmp, cs, tmpdirectory, false, false, true);
     }
 
     /**
@@ -537,44 +340,6 @@ public class ExternalSort {
      * in-memory, and write the result to temporary files that have to be
      * merged later.
      *
-     * @param fbr        data source
-     * @param datalength estimated data volume (in bytes)
-     * @return a list of temporary flat files
-     * @throws IOException generic IO exception
-     */
-    public static List<File> sortInBatch(final BufferedReader fbr,
-                                         final long datalength) throws IOException {
-        return sortInBatch(fbr, datalength, defaultcomparator,
-                DEFAULTMAXTEMPFILES, estimateAvailableMemory(),
-                Charset.defaultCharset(), null, false, 0, false, true);
-    }
-
-    /**
-     * This will simply load the file by blocks of lines, then sort them
-     * in-memory, and write the result to temporary files that have to be
-     * merged later.
-     *
-     * @param fbr        data source
-     * @param datalength estimated data volume (in bytes)
-     * @param cmp        string comparator
-     * @param distinct   Pass <code>true</code> if duplicate lines should be
-     *                   discarded.
-     * @return a list of temporary flat files
-     * @throws IOException generic IO exception
-     */
-    public static List<File> sortInBatch(final BufferedReader fbr,
-                                         final long datalength, final Comparator<String> cmp,
-                                         final boolean distinct) throws IOException {
-        return sortInBatch(fbr, datalength, cmp, DEFAULTMAXTEMPFILES,
-                estimateAvailableMemory(), Charset.defaultCharset(),
-                null, distinct, 0, false, true);
-    }
-
-    /**
-     * This will simply load the file by blocks of lines, then sort them
-     * in-memory, and write the result to temporary files that have to be
-     * merged later.
-     *
      * @param fbr          data source
      * @param datalength   estimated data volume (in bytes)
      * @param cmp          string comparator
@@ -642,52 +407,6 @@ public class ExternalSort {
     /**
      * This will simply load the file by blocks of lines, then sort them
      * in-memory, and write the result to temporary files that have to be
-     * merged later.
-     *
-     * @param file some flat file
-     * @return a list of temporary flat files
-     * @throws IOException generic IO exception
-     */
-    public static List<File> sortInBatch(File file) throws IOException {
-        return sortInBatch(file, defaultcomparator);
-    }
-
-    /**
-     * This will simply load the file by blocks of lines, then sort them
-     * in-memory, and write the result to temporary files that have to be
-     * merged later.
-     *
-     * @param file some flat file
-     * @param cmp  string comparator
-     * @return a list of temporary flat files
-     * @throws IOException generic IO exception
-     */
-    public static List<File> sortInBatch(File file, Comparator<String> cmp)
-            throws IOException {
-        return sortInBatch(file, cmp, false);
-    }
-
-    /**
-     * This will simply load the file by blocks of lines, then sort them
-     * in-memory, and write the result to temporary files that have to be
-     * merged later.
-     *
-     * @param file     some flat file
-     * @param cmp      string comparator
-     * @param distinct Pass <code>true</code> if duplicate lines should be
-     *                 discarded.
-     * @return a list of temporary flat files
-     * @throws IOException generic IO exception
-     */
-    public static List<File> sortInBatch(File file, Comparator<String> cmp,
-                                         boolean distinct) throws IOException {
-        return sortInBatch(file, cmp, DEFAULTMAXTEMPFILES,
-                Charset.defaultCharset(), null, distinct);
-    }
-
-    /**
-     * This will simply load the file by blocks of lines, then sort them
-     * in-memory, and write the result to temporary files that have to be
      * merged later. You can specify a bound on the number of temporary
      * files that will be created.
      *
@@ -725,60 +444,6 @@ public class ExternalSort {
      *                     default location)
      * @param distinct     Pass <code>true</code> if duplicate lines should be
      *                     discarded.
-     * @return a list of temporary flat files
-     * @throws IOException generic IO exception
-     */
-    public static List<File> sortInBatch(File file, Comparator<String> cmp,
-                                         int maxtmpfiles, Charset cs, File tmpdirectory, boolean distinct)
-            throws IOException {
-        return sortInBatch(file, cmp, maxtmpfiles, cs, tmpdirectory,
-                distinct, 0);
-    }
-
-    /**
-     * This will simply load the file by blocks of lines, then sort them
-     * in-memory, and write the result to temporary files that have to be
-     * merged later. You can specify a bound on the number of temporary
-     * files that will be created.
-     *
-     * @param file         some flat file
-     * @param cmp          string comparator
-     * @param cs           character set to use (can use
-     *                     Charset.defaultCharset())
-     * @param tmpdirectory location of the temporary files (set to null for
-     *                     default location)
-     * @param distinct     Pass <code>true</code> if duplicate lines should be
-     *                     discarded.
-     * @param numHeader    number of lines to preclude before sorting starts
-     * @return a list of temporary flat files
-     * @throws IOException generic IO exception
-     */
-    public static List<File> sortInBatch(File file, Comparator<String> cmp,
-                                         Charset cs, File tmpdirectory,
-                                         boolean distinct, int numHeader)
-            throws IOException {
-        BufferedReader fbr = new BufferedReader(new InputStreamReader(
-                new FileInputStream(file), cs));
-        return sortInBatch(fbr, file.length(), cmp, DEFAULTMAXTEMPFILES,
-                estimateAvailableMemory(), cs, tmpdirectory, distinct,
-                numHeader, false, true);
-    }
-
-    /**
-     * This will simply load the file by blocks of lines, then sort them
-     * in-memory, and write the result to temporary files that have to be
-     * merged later. You can specify a bound on the number of temporary
-     * files that will be created.
-     *
-     * @param file         some flat file
-     * @param cmp          string comparator
-     * @param maxtmpfiles  maximal number of temporary files
-     * @param cs           character set to use (can use
-     *                     Charset.defaultCharset())
-     * @param tmpdirectory location of the temporary files (set to null for
-     *                     default location)
-     * @param distinct     Pass <code>true</code> if duplicate lines should be
-     *                     discarded.
      * @param numHeader    number of lines to preclude before sorting starts
      * @return a list of temporary flat files
      * @throws IOException generic IO exception
@@ -792,69 +457,6 @@ public class ExternalSort {
         return sortInBatch(fbr, file.length(), cmp, maxtmpfiles,
                 estimateAvailableMemory(), cs, tmpdirectory, distinct,
                 numHeader, false, true);
-    }
-
-    /**
-     * This will simply load the file by blocks of lines, then sort them
-     * in-memory, and write the result to temporary files that have to be
-     * merged later. You can specify a bound on the number of temporary
-     * files that will be created.
-     *
-     * @param file         some flat file
-     * @param cmp          string comparator
-     * @param maxtmpfiles  maximal number of temporary files
-     * @param cs           character set to use (can use
-     *                     Charset.defaultCharset())
-     * @param tmpdirectory location of the temporary files (set to null for
-     *                     default location)
-     * @param distinct     Pass <code>true</code> if duplicate lines should be
-     *                     discarded.
-     * @param numHeader    number of lines to preclude before sorting starts
-     * @param usegzip      use gzip compression for the temporary files
-     * @return a list of temporary flat files
-     * @throws IOException generic IO exception
-     */
-    public static List<File> sortInBatch(File file, Comparator<String> cmp,
-                                         int maxtmpfiles, Charset cs, File tmpdirectory,
-                                         boolean distinct, int numHeader, boolean usegzip)
-            throws IOException {
-        BufferedReader fbr = new BufferedReader(new InputStreamReader(
-                new FileInputStream(file), cs));
-        return sortInBatch(fbr, file.length(), cmp, maxtmpfiles,
-                estimateAvailableMemory(), cs, tmpdirectory, distinct,
-                numHeader, usegzip, true);
-    }
-
-    /**
-     * This will simply load the file by blocks of lines, then sort them
-     * in-memory, and write the result to temporary files that have to be
-     * merged later. You can specify a bound on the number of temporary
-     * files that will be created.
-     *
-     * @param file         some flat file
-     * @param cmp          string comparator
-     * @param maxtmpfiles  maximal number of temporary files
-     * @param cs           character set to use (can use
-     *                     Charset.defaultCharset())
-     * @param tmpdirectory location of the temporary files (set to null for
-     *                     default location)
-     * @param distinct     Pass <code>true</code> if duplicate lines should be
-     *                     discarded.
-     * @param numHeader    number of lines to preclude before sorting starts
-     * @param usegzip      use gzip compression for the temporary files
-     * @param parallel     whether to sort in parallel
-     * @return a list of temporary flat files
-     * @throws IOException generic IO exception
-     */
-    public static List<File> sortInBatch(File file, Comparator<String> cmp,
-                                         int maxtmpfiles, Charset cs, File tmpdirectory,
-                                         boolean distinct, int numHeader, boolean usegzip, boolean parallel)
-            throws IOException {
-        BufferedReader fbr = new BufferedReader(new InputStreamReader(
-                new FileInputStream(file), cs));
-        return sortInBatch(fbr, file.length(), cmp, maxtmpfiles,
-                estimateAvailableMemory(), cs, tmpdirectory, distinct,
-                numHeader, usegzip, parallel);
     }
 
     /**
