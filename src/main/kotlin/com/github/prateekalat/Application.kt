@@ -1,4 +1,4 @@
-package com.prateekalat.github
+package com.github.prateekalat
 
 import com.github.prateekalat.index.IndexGenerator
 import com.github.prateekalat.parse.Page
