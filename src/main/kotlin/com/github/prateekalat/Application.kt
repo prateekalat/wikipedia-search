@@ -24,10 +24,12 @@ fun main(args: Array<String>) {
         System.exit(1)
     }
 
-    val removeTrailingSlash = { it: Char -> it == '/' }
+    val inputFilePath = args[0]
+    val outputFilePath = args[1]
 
-    val inputDirectory = args[0].dropLastWhile(removeTrailingSlash)
-    val outputDirectory = args[1].dropLastWhile(removeTrailingSlash)
+    val inputFile = File(inputFilePath)
+    val outputFile = File(outputFilePath)
+    val outputDirectory = outputFile.parentFile
 
     val unsortedIndexFile = File("$outputDirectory/unsorted_index.txt").apply { deleteOnExit() }
     val writer = unsortedIndexFile.bufferedWriter()
@@ -77,15 +79,15 @@ fun main(args: Array<String>) {
         }
     })
 
-    saxParser.parse(File("$inputDirectory/wiki-search-small.xml"), handler)
+    saxParser.parse(inputFile, handler)
 
     val comparator: Comparator<String> = Comparator { o1, o2 ->
         o1.split(":")[0].compareTo(o2.split(":")[0])
     }
 
-    val listOfFiles = sortInBatch(unsortedIndexFile, comparator, File(outputDirectory))
+    val listOfFiles = sortInBatch(unsortedIndexFile, comparator, outputDirectory)
 
-    mergeSortedFiles(listOfFiles, File("$outputDirectory/index.txt"), comparator)
+    mergeSortedFiles(listOfFiles, outputFile, comparator)
 
     val currentTime = System.currentTimeMillis()
     System.out.println("%d seconds".format((currentTime - startTime) / 1000))
