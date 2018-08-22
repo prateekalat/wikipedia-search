@@ -12,8 +12,6 @@ import com.google.code.externalsorting.ExternalSort.*
 import java.io.File
 import javax.xml.parsers.SAXParserFactory
 
-//    companion object {
-//        @JvmStatic
 fun main(args: Array<String>) {
     val startTime = System.currentTimeMillis()
 
@@ -21,7 +19,17 @@ fun main(args: Array<String>) {
 
     var pageId = 1
 
-    val unsortedIndexFile = File("Z:/SearchEngine/out.txt").apply { if (exists()) delete() }
+    if (args.size < 2) {
+        System.err.println("Too few arguments. First argument is input directory. Second is output directory.")
+        System.exit(1)
+    }
+
+    val removeTrailingSlash = { it: Char -> it == '/' }
+
+    val inputDirectory = args[0].dropLastWhile(removeTrailingSlash)
+    val outputDirectory = args[1].dropLastWhile(removeTrailingSlash)
+
+    val unsortedIndexFile = File("$outputDirectory/unsorted_index.txt").apply { deleteOnExit() }
     val writer = unsortedIndexFile.bufferedWriter()
 
     val parserFactory = SAXParserFactory.newInstance()
@@ -68,16 +76,16 @@ fun main(args: Array<String>) {
             pageId++
         }
     })
-    saxParser.parse(File("Z:/SearchEngine/wiki-search-small.xml"), handler)
+
+    saxParser.parse(File("$inputDirectory/wiki-search-small.xml"), handler)
 
     val comparator: Comparator<String> = Comparator { o1, o2 ->
         o1.split(":")[0].compareTo(o2.split(":")[0])
     }
 
-    val listOfFiles = sortInBatch(unsortedIndexFile, comparator,
-            File("Z:/SearchEngine/"))
+    val listOfFiles = sortInBatch(unsortedIndexFile, comparator, File(outputDirectory))
 
-    mergeSortedFiles(listOfFiles, File("Z:/SearchEngine/index.txt"), comparator)
+    mergeSortedFiles(listOfFiles, File("$outputDirectory/index.txt"), comparator)
 
     val currentTime = System.currentTimeMillis()
     System.out.println("%d seconds".format((currentTime - startTime) / 1000))
