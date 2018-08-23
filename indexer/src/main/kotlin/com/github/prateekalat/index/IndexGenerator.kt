@@ -1,38 +1,48 @@
 package com.github.prateekalat.index
 
-import java.util.*
+import com.github.prateekalat.tokenize.Stemmer
+import io.reactivex.Observable
+import java.util.concurrent.atomic.AtomicInteger
 
-class IndexGenerator {
-    fun generateIndex(
-            pageId: Int,
-            textTokens: TreeMap<String, Int>,
-            categoryTokens: TreeMap<String, Int>,
-            titleTokens: TreeMap<String, Int>,
-            infoBoxTokens: TreeMap<String, Int>,
-            linkTokens: TreeMap<String, Int>
-    ) : String {
+class IndexGenerator(val stemmer: Stemmer) {
+
+    fun generateIndex(): Observable<String> {
+
         val builder = StringBuilder()
+        return stemmer.getStemmedTokens()
+                .map {
 
-        for ((word, frequency) in textTokens) {
-            builder.append("%s:d%d-%d\n".format(word, pageId, frequency))
-        }
+//                    System.out.println("IndexGenerator: ${Thread.currentThread()}")
 
-        for ((word, frequency) in categoryTokens) {
-            builder.append("%s-c:d%d-%d\n".format(word, pageId, frequency))
-        }
+                    builder.setLength(0)
 
-        for ((word, frequency) in titleTokens) {
-            builder.append("%s-t:d%d-%d\n".format(word, pageId, frequency))
-        }
+                    val pageId = atomicPageId.getAndIncrement()
 
-        for ((word, frequency) in infoBoxTokens) {
-            builder.append("%s-i:d%d-%d\n".format(word, pageId, frequency))
-        }
+                    for ((word, frequency) in it[0]) {
+                        builder.append("%s:d%d-%d\n".format(word, pageId, frequency))
+                    }
 
-        for ((word, frequency) in linkTokens) {
-            builder.append("%s-l:d%d-%d\n".format(word, pageId, frequency))
-        }
+                    for ((word, frequency) in it[1]) {
+                        builder.append("%s-c:d%d-%d\n".format(word, pageId, frequency))
+                    }
 
-        return builder.toString()
+                    for ((word, frequency) in it[2]) {
+                        builder.append("%s-t:d%d-%d\n".format(word, pageId, frequency))
+                    }
+
+                    for ((word, frequency) in it[3]) {
+                        builder.append("%s-i:d%d-%d\n".format(word, pageId, frequency))
+                    }
+
+                    for ((word, frequency) in it[4]) {
+                        builder.append("%s-l:d%d-%d\n".format(word, pageId, frequency))
+                    }
+
+                    builder.toString()
+                }
+    }
+
+    companion object {
+        var atomicPageId = AtomicInteger(1)
     }
 }

@@ -55,4 +55,8 @@ class PageHandler(private val callback: PageCallback) : DefaultHandler() {
             currentWikitext = currentWikitext?.append(ch, start, length)
         }// Avoids looking at the revision ID, only the first ID should be taken.
     }
+
+    override fun endDocument() {
+        callback.complete()
+    }
 }

@@ -6,7 +6,7 @@ class WikiParserTest {
 
     @Test
     fun testParse() {
-        val parser = TextParser("")
-        System.out.println(parser.redirectText)
+//        val parser = TextParser("")
+//        System.out.println(parser.redirectText)
     }
 }

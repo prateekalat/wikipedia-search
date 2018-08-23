@@ -3,7 +3,7 @@ package com.github.prateekalat.tokenize
 import org.tartarus.snowball.Stemmer
 import java.util.*
 
-class Stemmer {
+class Stemmer(val tokenizer: Tokenizer) {
     private val internalStemmer = Stemmer()
 
     fun stemTreeMap(inputMap: TreeMap<String, Int>) : TreeMap<String, Int> {
@@ -28,5 +28,11 @@ class Stemmer {
         }
 
         return outputMap
+    }
+
+    fun getStemmedTokens() = tokenizer.getListOfTokenSets().map { it ->
+//        System.out.println("Stemmer: ${Thread.currentThread()}")
+
+        it.map { stemTreeMap(it) }
     }
 }

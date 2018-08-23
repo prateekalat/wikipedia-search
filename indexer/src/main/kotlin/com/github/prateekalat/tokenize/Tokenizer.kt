@@ -1,8 +1,9 @@
 package com.github.prateekalat.tokenize
 
+import io.reactivex.Observable
 import java.util.*
 
-class Tokenizer {
+class Tokenizer(val cleaner: Cleaner) {
     private val whitespaceMatcher = "\\s+".toRegex()
 
     private fun List<String>.toTreeMap() : TreeMap<String, Int> {
@@ -31,4 +32,12 @@ class Tokenizer {
     fun tokenize(text: String) = text
             .split(whitespaceMatcher)
             .toTreeMap()
+
+    fun getListOfTokenSets(): Observable<List<TreeMap<String, Int>>> = cleaner
+            .getCleanedStrings()
+            .map { it ->
+//                System.out.println("Tokenizer: ${Thread.currentThread().id}")
+
+                it.map { tokenize(it) }
+            }
 }

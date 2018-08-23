@@ -5,9 +5,10 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 
-class TextParser(wikiText: String) {
-    val text: String
-    var matcher: Matcher = stubPattern!!.matcher(wikiText)
+class TextParser(page: Page) {
+    private val text: String
+    val title = page.title
+    var matcher: Matcher
     var isRedirect = false
         private set
     var redirectText: String? = null
@@ -68,10 +69,11 @@ class TextParser(wikiText: String) {
         }
 
     init {
-        this.text = wikiText
-        findRedirect(wikiText)
+        text = page.wikiText
+        matcher  = stubPattern.matcher(text)
+        findRedirect(text)
         isStub = matcher.find()
-        matcher = disambiguationPattern.matcher(wikiText)
+        matcher = disambiguationPattern.matcher(text)
         isDisambiguationPage = matcher.find()
     }
 
