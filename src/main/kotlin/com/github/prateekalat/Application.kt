@@ -13,14 +13,12 @@ import java.io.File
 import javax.xml.parsers.SAXParserFactory
 
 fun main(args: Array<String>) {
-    val startTime = System.currentTimeMillis()
-
-    args.forEach { System.out.println(it) }
+//    val startTime = System.currentTimeMillis()
 
     var pageId = 1
 
     if (args.size < 2) {
-        System.err.println("Too few arguments. First argument is input directory. Second is output directory.")
+        System.err.println("Too few arguments. First argument is input file. Second is output file.")
         System.exit(1)
     }
 
@@ -89,8 +87,8 @@ fun main(args: Array<String>) {
 
     mergeSortedFiles(listOfFiles, outputFile, comparator)
 
-    val currentTime = System.currentTimeMillis()
-    System.out.println("%d seconds".format((currentTime - startTime) / 1000))
+//    val currentTime = System.currentTimeMillis()
+//    System.out.println("%d seconds".format((currentTime - startTime) / 1000))
 
     writer.close()
 }
